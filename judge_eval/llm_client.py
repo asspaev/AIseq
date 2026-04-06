@@ -7,6 +7,8 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
+from loguru import logger
+
 from openai import OpenAI
 
 from . import settings
@@ -54,21 +56,30 @@ def complete_chat(
     model: str,
     messages: list[dict[str, str]],
     temperature: float = 0.0,
+    _retry_sleep: int = 30,
 ) -> LLMCallResult:
-    t0 = time.perf_counter()
-    # Как в academiy_test_llm_safety/backend/app/llm.py: Grok через OpenAI SDK без response_format
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-    )
-    latency_ms = (time.perf_counter() - t0) * 1000
-    text = resp.choices[0].message.content or "{}"
-    u = resp.usage
-    pt = u.prompt_tokens if u else None
-    ct = u.completion_tokens if u else None
-    tt = u.total_tokens if u else None
-    return LLMCallResult(text, latency_ms, pt, ct, tt)
+    while True:
+        t0 = time.perf_counter()
+        try:
+            # Как в academiy_test_llm_safety/backend/app/llm.py: Grok через OpenAI SDK без response_format
+            resp = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+            )
+        except Exception as e:
+            if getattr(e, "status_code", None) == 429 or "429" in str(e):
+                logger.warning(f"429 rate limit for {model}, sleeping {_retry_sleep}s...")
+                time.sleep(_retry_sleep)
+                continue
+            raise
+        latency_ms = (time.perf_counter() - t0) * 1000
+        text = resp.choices[0].message.content or "{}"
+        u = resp.usage
+        pt = u.prompt_tokens if u else None
+        ct = u.completion_tokens if u else None
+        tt = u.total_tokens if u else None
+        return LLMCallResult(text, latency_ms, pt, ct, tt)
 
 
 def _strip_markdown_fence(text: str) -> str:

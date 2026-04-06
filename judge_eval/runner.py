@@ -7,6 +7,7 @@ from pathlib import Path
 
 import yaml
 from dotenv import load_dotenv
+from loguru import logger
 
 from .approaches import run_approach
 from . import settings
@@ -50,6 +51,10 @@ def run_matrix(
     }
     (out_dir / "run_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    total = len(examples) * len(run_cfg.models) * len(run_cfg.approaches)
+    logger.info(f"Starting eval: {len(examples)} examples × {len(run_cfg.models)} models × {len(run_cfg.approaches)} approaches = {total} calls")
+
+    done = 0
     with log_path.open("w", encoding="utf-8") as fp:
         for ex in examples:
             for mc in run_cfg.models:
@@ -66,6 +71,19 @@ def run_matrix(
                         dry_run,
                     )
                     fp.write(rec.model_dump_json() + "\n")
+                    fp.flush()
+                    done += 1
+                    if rec.error:
+                        logger.warning(
+                            f"[{done}/{total}] FAIL  {ex.id} | {mc.id} | {approach} — {rec.error}"
+                        )
+                    else:
+                        verdict = "UNSAFE" if rec.pred_unsafe else "safe"
+                        logger.info(
+                            f"[{done}/{total}] OK    {ex.id} | {mc.id} | {approach} | "
+                            f"{verdict} conf={rec.confidence:.2f} lat={rec.latency_ms:.0f}ms"
+                        )
+    logger.success(f"Done. Wrote {log_path}")
     return log_path
 
 
