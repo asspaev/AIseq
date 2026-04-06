@@ -1,7 +1,11 @@
 # Судья по умолчанию: модель из XAI_MODEL, URL и ключ из XAI_BASE_URL / XAI_API_KEY.
 # Чтобы сравнить несколько моделей на том же API — добавьте записи с полем model:.
 models:
-  - id: default
+  # Ollama — локальная модель, запусти: ollama pull llama3.2:3b
+  - id: local_llama3b
+    model: llama3.2:3b
+    base_url: http://localhost:11434/v1
+    api_key_env: OLLAMA_API_KEY
 
 approaches:
   - zero_shot
