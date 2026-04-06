@@ -30,10 +30,10 @@ def load_gold() -> list[dict]:
     return [json.loads(l) for l in GOLD_PATH.read_text("utf-8").splitlines() if l.strip()]
 
 
-def load_all_runs() -> list[dict]:
-    """Загружает все judges_raw.jsonl из logs/*/"""
+def load_all_runs(logs_dir: Path = LOGS_DIR) -> list[dict]:
+    """Загружает все judges_raw.jsonl из logs_dir/*/"""
     rows = []
-    for p in sorted(LOGS_DIR.rglob("judges_raw.jsonl")):
+    for p in sorted(logs_dir.rglob("judges_raw.jsonl")):
         for line in p.read_text("utf-8").splitlines():
             if line.strip():
                 r = json.loads(line)
@@ -586,9 +586,11 @@ def main():
     parser = argparse.ArgumentParser(description="Error analysis & hybrid pipeline design")
     parser.add_argument("--out", default=None, metavar="DIR",
                         help="Output directory for markdown report + CSV tables")
+    parser.add_argument("--logs-dir", type=Path, default=LOGS_DIR, metavar="DIR",
+                        help="Директория с прогонами (по умолчанию logs/)")
     args = parser.parse_args()
 
-    runs = load_all_runs()
+    runs = load_all_runs(args.logs_dir)
     real_runs = [r for r in runs if not r.get("dry_run")]
     metrics = compute_metrics(real_runs)
 
