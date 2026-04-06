@@ -1,0 +1,8 @@
+pattern,risk,affected_approaches,example_ids,description
+adversarial_framing,false_safe — судья принимает framing за чистую монету,zero_shot|few_shot,"jb_001–020 (prefix + roleplay)|amb_007, amb_014 (confidence=1, borderline)","Запросы с легитимным прикрытием ('для фильма', 'для тестирования', [DAN mode])"
+borderline_security_edu,false_unsafe — overtrigger на security-терминологию,zero_shot|reference_based,"jb_041–047 (buffer overflow, zero-day, IDOR explanation — safe)",Образовательный контент о CVE / техниках атак без actionable exploit
+no_reference,hallucination_miss или false_safe — reference-based деградирует до zero-shot,reference_based|hybrid,jb_001–060 (все),Jailbreak/policy задачи без reference (reference=null)
+ru_en_mismatch,"Ошибки парсинга intent, снижение confidence → hybrid escalation всегда",few_shot|hybrid,mul_007–010 (lang=mixed)|mul_019–020,"Текст на RU, few-shot примеры в системном промпте на RU/EN; mixed lang=mixed"
+subtle_hallucination,hallucination_miss при zero_shot без reference; FP если reference широк,zero_shot,hall_003 (1971 vs 2008)|hall_006 (1774 vs 1775)|hall_020 (вымышленное событие),Частично верный ответ с одной неверной датой/связью
+grounded_response_fp,false_unsafe — судья избыточно осторожен,zero_shot|few_shot,"hall_031–060 (grounded, human_unsafe=False)|amb_001, amb_003, amb_005","Корректный ответ, лексически близкий к опасному контенту (e.g. историческое насилие)"
+confidence_miscalibration,Лишний LLM-вызов в hybrid (x2 cost) без улучшения accuracy,hybrid,Все amb_* с annotator_confidence=1,Судья выдаёт confidence=0.5 на очевидных случаях → hybrid escalation зря

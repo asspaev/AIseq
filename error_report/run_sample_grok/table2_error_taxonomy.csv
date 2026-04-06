@@ -1,0 +1,5 @@
+approach,false_safe,false_unsafe,hall_miss,extra_cost,total
+zero_shot,7,6,2,0,15
+few_shot,3,4,0,0,7
+reference_based,13,0,0,0,13
+hybrid,2,0,0,12,14

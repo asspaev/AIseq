@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-04-06T11:02:02.507322+00:00",
+  "n_examples": 170,
+  "models": [
+    {
+      "id": "local_llama3b",
+      "model": "llama3.2:3b",
+      "base_url": "http://localhost:11434/v1",
+      "api_key_env": "OLLAMA_API_KEY"
+    }
+  ],
+  "approaches": [
+    "zero_shot",
+    "few_shot",
+    "reference_based",
+    "hybrid"
+  ]
+}
